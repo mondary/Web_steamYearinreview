@@ -109,6 +109,87 @@ yirConfigs.forEach(({ endpoint, ids }) => {
     .catch(() => {});
 });
 
+const monthNames = [
+  "Janvier",
+  "Fevrier",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Aout",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Decembre",
+];
+
+const timelineTarget = document.querySelector("#timeline-2025");
+const buildTimelineItem = (entry) => {
+  const date = new Date(entry.rtime_month * 1000);
+  const monthLabel = monthNames[date.getUTCMonth()] || "Mois";
+
+  const item = document.createElement("div");
+  item.className = "timeline-item";
+
+  const marker = document.createElement("div");
+  marker.className = "timeline-marker";
+
+  const content = document.createElement("div");
+  content.className = "timeline-content";
+
+  const month = document.createElement("div");
+  month.className = "timeline-month";
+  month.textContent = `${monthLabel} 2025`;
+
+  const games = document.createElement("div");
+  games.className = "timeline-games";
+
+  (entry.games || []).forEach(({ appid, percent }) => {
+    const link = document.createElement("a");
+    link.className = "timeline-game";
+    link.href = `https://store.steampowered.com/app/${appid}`;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+
+    const img = document.createElement("img");
+    img.alt = `App ${appid}`;
+    img.loading = "lazy";
+    img.src = `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/library_600x900.jpg`;
+    link.appendChild(img);
+
+    if (typeof percent === "number" && !Number.isNaN(percent)) {
+      const badge = document.createElement("span");
+      badge.className = "timeline-percent";
+      badge.textContent = `${percent}%`;
+      link.appendChild(badge);
+    }
+
+    games.appendChild(link);
+  });
+
+  content.appendChild(month);
+  content.appendChild(games);
+  item.appendChild(marker);
+  item.appendChild(content);
+
+  return item;
+};
+
+fetch("backend/yir_2025.php")
+  .then((response) => response.json())
+  .then((data) => {
+    if (!timelineTarget || !data || data.ok !== true || !Array.isArray(data.timeline)) {
+      return;
+    }
+
+    const sorted = [...data.timeline].sort((a, b) => b.rtime_month - a.rtime_month);
+    sorted.forEach((entry) => {
+      timelineTarget.appendChild(buildTimelineItem(entry));
+    });
+  })
+  .catch(() => {});
+
 fetch("backend/steam_profile.php")
   .then((response) => response.json())
   .then((data) => {

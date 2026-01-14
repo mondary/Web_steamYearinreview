@@ -17,6 +17,7 @@ const steamidInput = document.querySelector("#steamid-input");
 const steamidAdd = document.querySelector("#steamid-add");
 const steamidLinks = document.querySelectorAll("[data-steamid-link]");
 const defaultSteamId = "76561197974617624";
+const defaultSteamLabel = "pouark";
 
 const profileMeta = {
   level: document.querySelector("#profile-level-value"),
@@ -32,28 +33,34 @@ const setStatText = (node, value) => {
 };
 
 const isSteamId = (value) => /^\d{17}$/.test(value);
+const normalizeVanity = (value) =>
+  value
+    .replace(/^https?:\/\/steamcommunity\.com\/id\//i, "")
+    .replace(/\/+$/, "")
+    .trim();
 
 const loadSteamIdState = () => {
-  const listRaw = localStorage.getItem("steamidList");
+  const listRaw = localStorage.getItem("steamProfiles");
   const activeRaw = localStorage.getItem("steamidActive");
-  const list = listRaw ? JSON.parse(listRaw) : [defaultSteamId];
-  const active = isSteamId(activeRaw) ? activeRaw : list[0] || defaultSteamId;
-  return { list: Array.from(new Set(list.filter(isSteamId))), active };
+  const list = listRaw ? JSON.parse(listRaw) : [{ steamid: defaultSteamId, label: defaultSteamLabel }];
+  const clean = list.filter((item) => item && isSteamId(item.steamid));
+  const active = isSteamId(activeRaw) ? activeRaw : clean[0]?.steamid || defaultSteamId;
+  return { list: clean, active };
 };
 
 const saveSteamIdState = (list, active) => {
-  localStorage.setItem("steamidList", JSON.stringify(list));
+  localStorage.setItem("steamProfiles", JSON.stringify(list));
   localStorage.setItem("steamidActive", active);
 };
 
 const renderSteamIdSelect = (list, active) => {
   if (!steamidSelect) return;
   steamidSelect.innerHTML = "";
-  list.forEach((id) => {
+  list.forEach((item) => {
     const option = document.createElement("option");
-    option.value = id;
-    option.textContent = id;
-    if (id === active) option.selected = true;
+    option.value = item.steamid;
+    option.textContent = item.label ? `${item.label} (${item.steamid})` : item.steamid;
+    if (item.steamid === active) option.selected = true;
     steamidSelect.appendChild(option);
   });
 };
@@ -67,6 +74,23 @@ const updateSteamIdLinks = (steamid) => {
   });
 };
 
+const resolveVanity = async (value) => {
+  const vanity = normalizeVanity(value);
+  if (!vanity) {
+    return null;
+  }
+
+  const response = await fetch(`backend/resolve_steamid.php?vanity=${encodeURIComponent(vanity)}`);
+  const data = await response.json();
+  if (!data || data.ok !== true) {
+    return null;
+  }
+  return {
+    steamid: data.steamid,
+    label: data.persona_name || vanity,
+  };
+};
+
 const yirConfigs = [
   {
     endpoint: "backend/yir_2025.php",
@@ -75,6 +99,8 @@ const yirConfigs = [
       gamesDelta: "#yir-games-delta",
       newGames: "#yir-new-games",
       demos: "#yir-demos",
+      sessions: "#yir-sessions",
+      achievements: "#yir-achievements",
     },
   },
   {
@@ -84,6 +110,8 @@ const yirConfigs = [
       gamesDelta: "#yir-2024-games-delta",
       newGames: "#yir-2024-new-games",
       demos: "#yir-2024-demos",
+      sessions: "#yir-2024-sessions",
+      achievements: "#yir-2024-achievements",
     },
   },
   {
@@ -93,6 +121,8 @@ const yirConfigs = [
       gamesDelta: "#yir-2023-games-delta",
       newGames: "#yir-2023-new-games",
       demos: "#yir-2023-demos",
+      sessions: "#yir-2023-sessions",
+      achievements: "#yir-2023-achievements",
     },
   },
   {
@@ -102,6 +132,8 @@ const yirConfigs = [
       gamesDelta: "#yir-2022-games-delta",
       newGames: "#yir-2022-new-games",
       demos: "#yir-2022-demos",
+      sessions: "#yir-2022-sessions",
+      achievements: "#yir-2022-achievements",
     },
   },
 ];
@@ -199,6 +231,8 @@ const renderYearStats = (steamid) => {
       gamesDelta: document.querySelector(ids.gamesDelta),
       newGames: document.querySelector(ids.newGames),
       demos: document.querySelector(ids.demos),
+      sessions: ids.sessions ? document.querySelector(ids.sessions) : null,
+      achievements: ids.achievements ? document.querySelector(ids.achievements) : null,
     };
 
     fetch(`${endpoint}?steamid=${steamid}`)
@@ -218,6 +252,14 @@ const renderYearStats = (steamid) => {
 
         if (typeof data.demos_played === "number") {
           setStatText(nodes.demos, data.demos_played);
+        }
+
+        if (nodes.sessions && typeof data.sessions === "number") {
+          setStatText(nodes.sessions, data.sessions);
+        }
+
+        if (nodes.achievements && typeof data.achievements === "number") {
+          setStatText(nodes.achievements, data.achievements);
         }
 
         if (typeof data.games_delta === "number") {
@@ -292,15 +334,27 @@ const applySteamId = (steamid) => {
 };
 
 if (steamidAdd && steamidInput && steamidSelect) {
-  steamidAdd.addEventListener("click", () => {
+  steamidAdd.addEventListener("click", async () => {
     const value = steamidInput.value.trim();
-    if (!isSteamId(value)) return;
+    let entry = null;
+
+    if (isSteamId(value)) {
+      entry = { steamid: value, label: value };
+    } else {
+      entry = await resolveVanity(value);
+    }
+
+    if (!entry) {
+      return;
+    }
+
     const state = loadSteamIdState();
-    const list = Array.from(new Set([...state.list, value]));
-    renderSteamIdSelect(list, value);
-    saveSteamIdState(list, value);
+    const list = state.list.filter((item) => item.steamid !== entry.steamid);
+    list.push(entry);
+    renderSteamIdSelect(list, entry.steamid);
+    saveSteamIdState(list, entry.steamid);
     steamidInput.value = "";
-    applySteamId(value);
+    applySteamId(entry.steamid);
   });
 
   steamidSelect.addEventListener("change", () => {
@@ -314,3 +368,17 @@ if (steamidAdd && steamidInput && steamidSelect) {
 const state = loadSteamIdState();
 renderSteamIdSelect(state.list, state.active);
 applySteamId(state.active);
+
+const updateButton = document.querySelector("#update-button");
+if (updateButton) {
+  updateButton.addEventListener("click", () => {
+    const active = steamidSelect ? steamidSelect.value : state.active;
+    fetch(`backend/clear_cache.php?steamid=${active}`)
+      .then(() => {
+        applySteamId(active);
+      })
+      .catch(() => {
+        applySteamId(active);
+      });
+  });
+}

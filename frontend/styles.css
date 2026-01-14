@@ -431,6 +431,32 @@ h1 {
   letter-spacing: 0.04em;
 }
 
+.fab-update {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #ff9f45;
+  color: #0b1118;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 16px 30px rgba(10, 14, 22, 0.4);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.fab-update:hover {
+  filter: brightness(1.05);
+}
+
+.fab-update:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 3px;
+}
+
 .year-card {
   position: relative;
   padding: 26px;

@@ -87,6 +87,8 @@ $newGames = count(array_filter($filtered, static function ($game) {
 
 $demosPlayed = (int) ($summary['playtime_stats']['demos_played'] ?? 0);
 $delta = $previousYear ? $gamesPlayed - $previousYear : 0;
+$sessions = (int) ($summary['playtime_stats']['total_stats']['total_sessions'] ?? 0);
+$achievements = (int) ($summary['playtime_stats']['summary_stats']['total_achievements'] ?? 0);
 
 $months = $summary['playtime_stats']['months'] ?? [];
 $timeline = [];
@@ -132,6 +134,8 @@ $result = [
     'new_games' => $newGames,
     'demos_played' => $demosPlayed,
     'games_delta' => $delta,
+    'sessions' => $sessions,
+    'achievements' => $achievements,
     'timeline' => $timeline,
 ];
 

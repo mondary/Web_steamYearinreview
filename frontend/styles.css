@@ -134,17 +134,11 @@ body {
   color: var(--muted);
 }
 
-.profile-meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-}
-
-.profile-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-top: 6px;
+.profile-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
 }
 
 .stat {
@@ -155,6 +149,11 @@ body {
   display: grid;
   gap: 4px;
   text-align: left;
+  min-width: 180px;
+}
+
+.stat-wide {
+  min-width: 260px;
 }
 
 .stat-label {
@@ -170,16 +169,6 @@ body {
   color: #ffffff;
 }
 
-.meta-chip {
-  font-size: 20px;
-  font-weight: 700;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  letter-spacing: 0.02em;
-}
 
 .profile-actions {
   display: flex;

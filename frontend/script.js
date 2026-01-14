@@ -12,19 +12,14 @@ const stats = {
   games: document.querySelector("#stat-games"),
 };
 
-const profileChips = {
+const profileMeta = {
   status: document.querySelector("#profile-status"),
-  level: document.querySelector("#profile-level-chip"),
-  games: document.querySelector("#profile-games-chip"),
-  member: document.querySelector("#profile-member-chip"),
+  level: document.querySelector("#profile-level-value"),
+  games: document.querySelector("#profile-games-value"),
+  member: document.querySelector("#profile-member-value"),
 };
 
 const setStatText = (node, value) => {
-  if (!node) return;
-  node.textContent = value || "--";
-};
-
-const setChipText = (node, value) => {
   if (!node) return;
   node.textContent = value || "--";
 };
@@ -122,19 +117,19 @@ fetch("backend/steam_profile.php")
     }
 
     if (data.status) {
-      setChipText(profileChips.status, data.status);
+      setStatText(profileMeta.status, data.status);
     }
 
     if (data.level) {
-      setChipText(profileChips.level, `Niveau ${data.level}`);
+      setStatText(profileMeta.level, data.level);
     }
 
     if (data.games_owned) {
-      setChipText(profileChips.games, `${data.games_owned} jeux`);
+      setStatText(profileMeta.games, data.games_owned);
     }
 
     if (data.member_since) {
-      setChipText(profileChips.member, `Membre depuis ${data.member_since}`);
+      setStatText(profileMeta.member, data.member_since);
     }
 
     if (data.account_age && (!stats.account_age || stats.account_age.textContent === "--")) {
@@ -146,5 +141,5 @@ fetch("backend/steam_profile.php")
     }
   })
   .catch(() => {
-    setChipText(profileChips.status, "Statut indisponible");
+    setStatText(profileMeta.status, "Statut indisponible");
   });

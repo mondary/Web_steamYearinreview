@@ -4,7 +4,10 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
 $year = 2024;
-$cacheFile = __DIR__ . '/cache/yir_2024_cache_v2.json';
+$steamIdParam = isset($_GET['steamid']) ? (string) $_GET['steamid'] : '';
+$steamIdParam = preg_match('/^\d{17}$/', $steamIdParam) ? $steamIdParam : '76561197974617624';
+
+$cacheFile = __DIR__ . '/cache/yir_2024_' . $steamIdParam . '.json';
 $cacheTtl = 6 * 60 * 60;
 
 if (file_exists($cacheFile)) {
@@ -15,7 +18,7 @@ if (file_exists($cacheFile)) {
     }
 }
 
-$url = 'https://store.steampowered.com/yearinreview/76561197974617624/' . $year;
+$url = 'https://store.steampowered.com/yearinreview/' . $steamIdParam . '/' . $year;
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [

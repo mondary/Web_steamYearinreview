@@ -43,29 +43,47 @@
               </div>
               <div class="stat">
                 <span class="stat-label">Valeur compte</span>
-                <span class="stat-value">3553€</span>
+                <span class="stat-value static-data">3553€</span>
               </div>
               <div class="stat">
                 <span class="stat-label">Jeux possedes</span>
-                <span class="stat-value">973</span>
+                <span class="stat-value static-data">973</span>
               </div>
               <div class="stat">
                 <span class="stat-label">Jeux joues</span>
-                <span class="stat-value">534 (54%)</span>
+                <span class="stat-value static-data">534 (54%)</span>
               </div>
               <div class="stat">
                 <span class="stat-label">Heures</span>
-                <span class="stat-value">3,576h</span>
+                <span class="stat-value static-data">3,576h</span>
               </div>
               <div class="stat">
                 <span class="stat-label">SteamID</span>
                 <span class="stat-value" id="profile-steamid-value">--</span>
               </div>
             </div>
+            <div class="profile-controls">
+              <label class="control-label" for="steamid-select">SteamID actif</label>
+              <div class="control-row">
+                <select id="steamid-select" class="control-select"></select>
+                <input
+                  id="steamid-input"
+                  class="control-input"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="\\d{17}"
+                  placeholder="Ajouter un SteamID 17 chiffres"
+                />
+                <button id="steamid-add" class="control-button" type="button">
+                  Ajouter
+                </button>
+              </div>
+            </div>
             <div class="profile-actions">
               <a
                 class="profile-link link-with-icon"
                 href="https://steamcommunity.com/id/pouark/"
+                data-steamid-link="https://steamcommunity.com/profiles/{steamid}/"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -92,6 +110,7 @@
               <a
                 class="profile-link ghost-link link-with-icon"
                 href="https://steamdb.info/calculator/76561197974617624/?cc=eu"
+                data-steamid-link="https://steamdb.info/calculator/{steamid}/?cc=eu"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -148,6 +167,7 @@
               <a
                 class="profile-link ghost-link link-with-icon"
                 href="https://checkmydeck.ofdgn.com/users/76561197974617624/lists/185536"
+                data-steamid-link="https://checkmydeck.ofdgn.com/users/{steamid}/lists/185536"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -232,9 +252,7 @@
       <header class="hero">
         <div class="steam-block reveal" data-delay="0.0s">
           <div class="_3AqWGkHdS0_AITodk35_vO"></div>
-          <div class="hero-content">
-            <h1>Steam Year in Review</h1>
-          </div>
+          <div class="hero-content"></div>
         </div>
       </header>
 
@@ -243,6 +261,7 @@
           <a
             class="year-link"
             href="https://store.steampowered.com/yearinreview/76561197974617624/2025"
+            data-steamid-link="https://store.steampowered.com/yearinreview/{steamid}/2025"
             target="_blank"
             rel="noreferrer"
           >
@@ -272,6 +291,7 @@
           <a
             class="year-link"
             href="https://store.steampowered.com/yearinreview/76561197974617624/2024"
+            data-steamid-link="https://store.steampowered.com/yearinreview/{steamid}/2024"
             target="_blank"
             rel="noreferrer"
           >
@@ -301,6 +321,7 @@
           <a
             class="year-link"
             href="https://store.steampowered.com/yearinreview/76561197974617624/2023"
+            data-steamid-link="https://store.steampowered.com/yearinreview/{steamid}/2023"
             target="_blank"
             rel="noreferrer"
           >
@@ -330,6 +351,7 @@
           <a
             class="year-link"
             href="https://store.steampowered.com/yearinreview/76561197974617624/2022"
+            data-steamid-link="https://store.steampowered.com/yearinreview/{steamid}/2022"
             target="_blank"
             rel="noreferrer"
           >

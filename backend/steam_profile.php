@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 
-$cacheFile = __DIR__ . '/cache/steam_profile_cache.json';
+$steamIdParam = isset($_GET['steamid']) ? (string) $_GET['steamid'] : '';
+$steamIdParam = preg_match('/^\d{17}$/', $steamIdParam) ? $steamIdParam : '';
+
+$cacheSuffix = $steamIdParam ?: 'vanity';
+$cacheFile = __DIR__ . '/cache/steam_profile_cache_' . $cacheSuffix . '.json';
 $cacheTtl = 3 * 60 * 60;
 
 if (file_exists($cacheFile)) {
@@ -14,7 +18,9 @@ if (file_exists($cacheFile)) {
     }
 }
 
-$url = 'https://steamcommunity.com/id/pouark/';
+$url = $steamIdParam
+    ? 'https://steamcommunity.com/profiles/' . $steamIdParam . '/'
+    : 'https://steamcommunity.com/id/pouark/';
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [
@@ -60,7 +66,7 @@ $statusNode = $xpath->query("//div[contains(@class,'profile_in_game_header')]")-
 $gamesPlayedNode = $xpath->query("//div[contains(@class,'games_played_ctn')]//div[contains(@class,'big_stat')]")->item(0);
 $titleNode = $xpath->query('//title')->item(0);
 
-$steamId = '';
+$steamId = $steamIdParam;
 if (preg_match('/\"steamid\"\\s*:\\s*\"(\\d{17})\"/', $html, $matches)) {
     $steamId = $matches[1];
 }

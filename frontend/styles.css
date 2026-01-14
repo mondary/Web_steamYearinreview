@@ -154,6 +154,56 @@ body {
   align-items: flex-start;
 }
 
+.profile-controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.control-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-select,
+.control-input {
+  background: rgba(10, 18, 30, 0.7);
+  border: 1px solid rgba(78, 110, 150, 0.45);
+  color: #ffffff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  min-height: 38px;
+}
+
+.control-input {
+  min-width: 220px;
+}
+
+.control-button {
+  background: rgba(127, 209, 255, 0.9);
+  color: #0b1118;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 38px;
+}
+
+.control-button:hover {
+  filter: brightness(1.05);
+}
+
 .stat {
   padding: 0;
   border-radius: 0;
@@ -180,6 +230,10 @@ body {
   font-size: 36px;
   font-weight: 700;
   color: #ffffff;
+}
+
+.static-data {
+  color: #ff4d4d;
 }
 
 

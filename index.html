@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Steam Year in Review Hub</title>
+    <link rel="stylesheet" href="frontend/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="profile-banner">
+        <div class="profile-card">
+          <div class="avatar-frame">
+            <img
+              class="avatar"
+              src="https://avatars.fastly.steamstatic.com/7b1b115be6ac4ded1bbfff20010da104ce6a55e1_full.jpg"
+              alt="Avatar Steam de pouark"
+            />
+            <span class="status-dot" aria-hidden="true"></span>
+          </div>
+          <div class="profile-info">
+            <p class="profile-label">Profil Steam</p>
+            <h2 class="profile-name">pouark</h2>
+            <p class="profile-status" id="profile-status">Statut en cours...</p>
+            <div class="profile-meta">
+              <span class="meta-chip" id="profile-level-chip">Niveau --</span>
+              <span class="meta-chip" id="profile-games-chip">Jeux --</span>
+              <span class="meta-chip" id="profile-member-chip">Membre depuis --</span>
+            </div>
+            <div class="profile-stats" aria-live="polite">
+              <div class="stat">
+                <span class="stat-label">Anciennete</span>
+                <span class="stat-value" id="stat-account-age">--</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Jeux joues / possedes</span>
+                <span class="stat-value" id="stat-games">--</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <a
+              class="profile-link"
+              href="https://steamcommunity.com/id/pouark/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Voir le profil
+            </a>
+            <a
+              class="profile-link ghost-link"
+              href="https://steamdb.info/calculator/76561197974617624/?cc=eu"
+              target="_blank"
+              rel="noreferrer"
+            >
+              SteamDB
+            </a>
+          </div>
+        </div>
+      </header>
+      <header class="hero">
+        <div class="steam-block reveal" data-delay="0.0s">
+          <div class="_3AqWGkHdS0_AITodk35_vO"></div>
+          <div class="hero-content">
+            <h1>Steam Year in Review</h1>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="year-grid">
+          <div class="year-details year-2025 reveal" data-delay="0.1s" aria-live="polite">
+            <p class="year-title">RETROSPECTIVE STEAM 2025</p>
+            <div class="year-main">
+              <div class="year-main-value" id="yir-games-played">--</div>
+              <div class="year-main-label">jeux lances</div>
+              <div class="year-delta">
+                <span class="year-delta-icon" aria-hidden="true"></span>
+                <span class="year-delta-text" id="yir-games-delta">--</span>
+              </div>
+            </div>
+            <div class="year-stats">
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-new-games">--</span>
+                <span class="year-stat-label">nouveaux jeux</span>
+              </div>
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-demos">--</span>
+                <span class="year-stat-label">demos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="year-details year-2024 reveal" data-delay="0.2s" aria-live="polite">
+            <p class="year-title">RETROSPECTIVE STEAM 2024</p>
+            <div class="year-main">
+              <div class="year-main-value" id="yir-2024-games-played">--</div>
+              <div class="year-main-label">jeux lances</div>
+              <div class="year-delta">
+                <span class="year-delta-icon" aria-hidden="true"></span>
+                <span class="year-delta-text" id="yir-2024-games-delta">--</span>
+              </div>
+            </div>
+            <div class="year-stats">
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-2024-new-games">--</span>
+                <span class="year-stat-label">nouveaux jeux</span>
+              </div>
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-2024-demos">--</span>
+                <span class="year-stat-label">demos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="year-details year-2023 reveal" data-delay="0.3s" aria-live="polite">
+            <p class="year-title">RETROSPECTIVE STEAM 2023</p>
+            <div class="year-main">
+              <div class="year-main-value" id="yir-2023-games-played">--</div>
+              <div class="year-main-label">jeux lances</div>
+              <div class="year-delta">
+                <span class="year-delta-icon" aria-hidden="true"></span>
+                <span class="year-delta-text" id="yir-2023-games-delta">--</span>
+              </div>
+            </div>
+            <div class="year-stats">
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-2023-new-games">--</span>
+                <span class="year-stat-label">nouveaux jeux</span>
+              </div>
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-2023-demos">--</span>
+                <span class="year-stat-label">demos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="year-details year-2022 reveal" data-delay="0.4s" aria-live="polite">
+            <p class="year-title">RETROSPECTIVE STEAM 2022</p>
+            <div class="year-main">
+              <div class="year-main-value" id="yir-2022-games-played">--</div>
+              <div class="year-main-label">jeux lances</div>
+              <div class="year-delta">
+                <span class="year-delta-icon" aria-hidden="true"></span>
+                <span class="year-delta-text" id="yir-2022-games-delta">--</span>
+              </div>
+            </div>
+            <div class="year-stats">
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-2022-new-games">--</span>
+                <span class="year-stat-label">nouveaux jeux</span>
+              </div>
+              <div class="year-stat">
+                <span class="year-stat-value" id="yir-2022-demos">--</span>
+                <span class="year-stat-label">demos</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="frontend/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,101 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+
+$year = 2022;
+$cacheFile = __DIR__ . '/cache/yir_2022_cache.json';
+$cacheTtl = 6 * 60 * 60;
+
+if (file_exists($cacheFile)) {
+    $cached = json_decode((string) file_get_contents($cacheFile), true);
+    if (is_array($cached) && isset($cached['fetched_at']) && (time() - (int) $cached['fetched_at'] < $cacheTtl)) {
+        echo json_encode($cached);
+        exit;
+    }
+}
+
+$url = 'https://store.steampowered.com/yearinreview/76561197974617624/' . $year;
+
+$ch = curl_init($url);
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_TIMEOUT => 15,
+    CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+]);
+$html = curl_exec($ch);
+$error = curl_error($ch);
+// curl_close is deprecated in PHP 8.5+ and is a no-op since 8.0.
+
+if (!$html || $error) {
+    http_response_code(502);
+    echo json_encode([
+        'ok' => false,
+        'error' => $error ?: 'Failed to fetch Steam Year in Review.',
+    ]);
+    exit;
+}
+
+$summaryMatch = [];
+$pattern = '/data-yearinreview_\\d+_' . $year . '=\"([^\"]+)\"/s';
+if (!preg_match($pattern, $html, $summaryMatch)) {
+    http_response_code(502);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'Year in Review data not found.',
+    ]);
+    exit;
+}
+
+$summaryJson = html_entity_decode($summaryMatch[1], ENT_QUOTES | ENT_HTML5);
+$summary = json_decode($summaryJson, true);
+
+if (!is_array($summary) || !isset($summary['playtime_stats'])) {
+    http_response_code(502);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'Invalid Year in Review payload.',
+    ]);
+    exit;
+}
+
+$previousMatch = [];
+$previousYear = 0;
+$previousPattern = '/data-yearinreview_' . $year . '_previous_year_summary=\"([^\"]+)\"/s';
+if (preg_match($previousPattern, $html, $previousMatch)) {
+    $previousJson = html_entity_decode($previousMatch[1], ENT_QUOTES | ENT_HTML5);
+    $previous = json_decode($previousJson, true);
+    if (is_array($previous) && isset($previous['games_played'])) {
+        $previousYear = (int) $previous['games_played'];
+    }
+}
+
+$gameSummary = $summary['playtime_stats']['game_summary'] ?? [];
+$filtered = array_filter($gameSummary, static function ($game) {
+    if (!is_array($game)) {
+        return false;
+    }
+    return (int) ($game['demo'] ?? 0) !== 1 && (int) ($game['playtest'] ?? 0) !== 1;
+});
+
+$gamesPlayed = count($filtered);
+$newGames = count(array_filter($filtered, static function ($game) {
+    return (int) ($game['new_this_year'] ?? 0) === 1;
+}));
+
+$demosPlayed = (int) ($summary['playtime_stats']['demos_played'] ?? 0);
+$delta = $previousYear ? $gamesPlayed - $previousYear : 0;
+
+$result = [
+    'ok' => true,
+    'fetched_at' => time(),
+    'source' => $url,
+    'games_played' => $gamesPlayed,
+    'new_games' => $newGames,
+    'demos_played' => $demosPlayed,
+    'games_delta' => $delta,
+];
+
+file_put_contents($cacheFile, json_encode($result));
+echo json_encode($result);

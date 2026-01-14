@@ -1,0 +1,150 @@
+const reveals = document.querySelectorAll(".reveal");
+
+reveals.forEach((el) => {
+  const delay = el.dataset.delay;
+  if (delay) {
+    el.style.setProperty("--delay", delay);
+  }
+});
+
+const stats = {
+  account_age: document.querySelector("#stat-account-age"),
+  games: document.querySelector("#stat-games"),
+};
+
+const profileChips = {
+  status: document.querySelector("#profile-status"),
+  level: document.querySelector("#profile-level-chip"),
+  games: document.querySelector("#profile-games-chip"),
+  member: document.querySelector("#profile-member-chip"),
+};
+
+const setStatText = (node, value) => {
+  if (!node) return;
+  node.textContent = value || "--";
+};
+
+const setChipText = (node, value) => {
+  if (!node) return;
+  node.textContent = value || "--";
+};
+
+const yirConfigs = [
+  {
+    endpoint: "backend/yir_2025.php",
+    ids: {
+      gamesPlayed: "#yir-games-played",
+      gamesDelta: "#yir-games-delta",
+      newGames: "#yir-new-games",
+      demos: "#yir-demos",
+    },
+  },
+  {
+    endpoint: "backend/yir_2024.php",
+    ids: {
+      gamesPlayed: "#yir-2024-games-played",
+      gamesDelta: "#yir-2024-games-delta",
+      newGames: "#yir-2024-new-games",
+      demos: "#yir-2024-demos",
+    },
+  },
+  {
+    endpoint: "backend/yir_2023.php",
+    ids: {
+      gamesPlayed: "#yir-2023-games-played",
+      gamesDelta: "#yir-2023-games-delta",
+      newGames: "#yir-2023-new-games",
+      demos: "#yir-2023-demos",
+    },
+  },
+  {
+    endpoint: "backend/yir_2022.php",
+    ids: {
+      gamesPlayed: "#yir-2022-games-played",
+      gamesDelta: "#yir-2022-games-delta",
+      newGames: "#yir-2022-new-games",
+      demos: "#yir-2022-demos",
+    },
+  },
+];
+
+yirConfigs.forEach(({ endpoint, ids }) => {
+  const nodes = {
+    gamesPlayed: document.querySelector(ids.gamesPlayed),
+    gamesDelta: document.querySelector(ids.gamesDelta),
+    newGames: document.querySelector(ids.newGames),
+    demos: document.querySelector(ids.demos),
+  };
+
+  fetch(endpoint)
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data || data.ok !== true) {
+        return;
+      }
+
+      if (typeof data.games_played === "number") {
+        setStatText(nodes.gamesPlayed, data.games_played);
+      }
+
+      if (typeof data.new_games === "number") {
+        setStatText(nodes.newGames, data.new_games);
+      }
+
+      if (typeof data.demos_played === "number") {
+        setStatText(nodes.demos, data.demos_played);
+      }
+
+      if (typeof data.games_delta === "number") {
+        if (data.games_delta < 0) {
+          setStatText(
+            nodes.gamesDelta,
+            `${Math.abs(data.games_delta)} jeux de moins que l'annee derniere`
+          );
+        } else if (data.games_delta > 0) {
+          setStatText(
+            nodes.gamesDelta,
+            `${data.games_delta} jeux de plus que l'annee derniere`
+          );
+        } else {
+          setStatText(nodes.gamesDelta, "autant que l'annee derniere");
+        }
+      }
+    })
+    .catch(() => {});
+});
+
+fetch("backend/steam_profile.php")
+  .then((response) => response.json())
+  .then((data) => {
+    if (!data || data.ok !== true) {
+      return;
+    }
+
+    if (data.status) {
+      setChipText(profileChips.status, data.status);
+    }
+
+    if (data.level) {
+      setChipText(profileChips.level, `Niveau ${data.level}`);
+    }
+
+    if (data.games_owned) {
+      setChipText(profileChips.games, `${data.games_owned} jeux`);
+    }
+
+    if (data.member_since) {
+      setChipText(profileChips.member, `Membre depuis ${data.member_since}`);
+    }
+
+    if (data.account_age && (!stats.account_age || stats.account_age.textContent === "--")) {
+      setStatText(stats.account_age, data.account_age);
+    }
+
+    if (data.games_played && data.games_owned && (!stats.games || stats.games.textContent === "--")) {
+      setStatText(stats.games, `${data.games_played} / ${data.games_owned}`);
+    }
+  })
+  .catch(() => {
+    setChipText(profileChips.status, "Statut indisponible");
+  });

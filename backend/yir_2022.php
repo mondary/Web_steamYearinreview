@@ -4,7 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
 $year = 2022;
-$cacheFile = __DIR__ . '/cache/yir_2022_cache.json';
+$cacheFile = __DIR__ . '/cache/yir_2022_cache_v2.json';
 $cacheTtl = 6 * 60 * 60;
 
 if (file_exists($cacheFile)) {
@@ -87,6 +87,42 @@ $newGames = count(array_filter($filtered, static function ($game) {
 $demosPlayed = (int) ($summary['playtime_stats']['demos_played'] ?? 0);
 $delta = $previousYear ? $gamesPlayed - $previousYear : 0;
 
+$months = $summary['playtime_stats']['months'] ?? [];
+$timeline = [];
+foreach ($months as $month) {
+    if (!is_array($month) || !isset($month['rtime_month'])) {
+        continue;
+    }
+
+    $monthGames = $month['game_summary'] ?? [];
+    if (!is_array($monthGames)) {
+        $monthGames = [];
+    }
+
+    usort($monthGames, static function ($a, $b) {
+        $aScore = (int) ($a['relative_playtime_percentagex100'] ?? 0);
+        $bScore = (int) ($b['relative_playtime_percentagex100'] ?? 0);
+        return $bScore <=> $aScore;
+    });
+
+    $games = [];
+    foreach ($monthGames as $entry) {
+        if (!isset($entry['appid'])) {
+            continue;
+        }
+        $percent = (int) round(((int) ($entry['relative_playtime_percentagex100'] ?? 0)) / 100);
+        $games[] = [
+            'appid' => (int) $entry['appid'],
+            'percent' => $percent,
+        ];
+    }
+
+    $timeline[] = [
+        'rtime_month' => (int) $month['rtime_month'],
+        'games' => $games,
+    ];
+}
+
 $result = [
     'ok' => true,
     'fetched_at' => time(),
@@ -95,6 +131,7 @@ $result = [
     'new_games' => $newGames,
     'demos_played' => $demosPlayed,
     'games_delta' => $delta,
+    'timeline' => $timeline,
 ];
 
 file_put_contents($cacheFile, json_encode($result));

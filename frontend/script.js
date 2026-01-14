@@ -124,8 +124,7 @@ const monthNames = [
   "Decembre",
 ];
 
-const timelineTarget = document.querySelector("#timeline-2025");
-const buildTimelineItem = (entry) => {
+const buildTimelineItem = (entry, year) => {
   const date = new Date(entry.rtime_month * 1000);
   const monthLabel = monthNames[date.getUTCMonth()] || "Mois";
 
@@ -140,7 +139,7 @@ const buildTimelineItem = (entry) => {
 
   const month = document.createElement("div");
   month.className = "timeline-month";
-  month.textContent = `${monthLabel} 2025`;
+  month.textContent = `${monthLabel} ${year}`;
 
   const games = document.createElement("div");
   games.className = "timeline-games";
@@ -176,19 +175,29 @@ const buildTimelineItem = (entry) => {
   return item;
 };
 
-fetch("backend/yir_2025.php")
-  .then((response) => response.json())
-  .then((data) => {
-    if (!timelineTarget || !data || data.ok !== true || !Array.isArray(data.timeline)) {
-      return;
-    }
+const renderTimeline = (targetId, endpoint, year) => {
+  const timelineTarget = document.querySelector(targetId);
+  if (!timelineTarget) return;
 
-    const sorted = [...data.timeline].sort((a, b) => b.rtime_month - a.rtime_month);
-    sorted.forEach((entry) => {
-      timelineTarget.appendChild(buildTimelineItem(entry));
-    });
-  })
-  .catch(() => {});
+  fetch(endpoint)
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data || data.ok !== true || !Array.isArray(data.timeline)) {
+        return;
+      }
+
+      const sorted = [...data.timeline].sort((a, b) => b.rtime_month - a.rtime_month);
+      sorted.forEach((entry) => {
+        timelineTarget.appendChild(buildTimelineItem(entry, year));
+      });
+    })
+    .catch(() => {});
+};
+
+renderTimeline("#timeline-2025", "backend/yir_2025.php", 2025);
+renderTimeline("#timeline-2024", "backend/yir_2024.php", 2024);
+renderTimeline("#timeline-2023", "backend/yir_2023.php", 2023);
+renderTimeline("#timeline-2022", "backend/yir_2022.php", 2022);
 
 fetch("backend/steam_profile.php")
   .then((response) => response.json())

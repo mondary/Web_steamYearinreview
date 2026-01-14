@@ -15,10 +15,15 @@ const stats = {
 const steamidSelect = document.querySelector("#steamid-select");
 const steamidInput = document.querySelector("#steamid-input");
 const steamidAdd = document.querySelector("#steamid-add");
+const steamidCancel = document.querySelector("#steamid-cancel");
+const steamidRemove = document.querySelector("#steamid-remove");
+const addModal = document.querySelector("#add-profile-modal");
 const steamidLinks = document.querySelectorAll("[data-steamid-link]");
 const vanityLinks = document.querySelectorAll("[data-vanity-link]");
 const defaultSteamId = "76561197974617624";
 const defaultSteamLabel = "pouark";
+const protectedSteamIds = new Set(["76561197974617624", "76561198106465284"]);
+let currentSteamId = defaultSteamId;
 
 const profileMeta = {
   level: document.querySelector("#profile-level-value"),
@@ -65,7 +70,16 @@ const renderSteamIdSelect = (list, active) => {
     if (item.steamid === active) option.selected = true;
     steamidSelect.appendChild(option);
   });
+
+  const addOption = document.createElement("option");
+  addOption.value = "__add__";
+  addOption.textContent = "Ajouter un pseudo ou ID…";
+  steamidSelect.appendChild(addOption);
 };
+
+const backendBase = "backend";
+
+const backendUrl = (path) => `${backendBase}/${path}`;
 
 const updateSteamIdLinks = (steamid) => {
   steamidLinks.forEach((link) => {
@@ -94,7 +108,7 @@ const resolveVanity = async (value) => {
     return null;
   }
 
-  const response = await fetch(`/backend/resolve_steamid.php?vanity=${encodeURIComponent(vanity)}`);
+  const response = await fetch(`${backendUrl("resolve_steamid.php")}?vanity=${encodeURIComponent(vanity)}`);
   const data = await response.json();
   if (!data || data.ok !== true) {
     return null;
@@ -107,7 +121,7 @@ const resolveVanity = async (value) => {
 
 const yirConfigs = [
   {
-    endpoint: "/backend/yir_2025.php",
+    endpoint: "yir_2025.php",
     ids: {
       gamesPlayed: "#yir-games-played",
       gamesDelta: "#yir-games-delta",
@@ -118,7 +132,7 @@ const yirConfigs = [
     },
   },
   {
-    endpoint: "/backend/yir_2024.php",
+    endpoint: "yir_2024.php",
     ids: {
       gamesPlayed: "#yir-2024-games-played",
       gamesDelta: "#yir-2024-games-delta",
@@ -129,7 +143,7 @@ const yirConfigs = [
     },
   },
   {
-    endpoint: "/backend/yir_2023.php",
+    endpoint: "yir_2023.php",
     ids: {
       gamesPlayed: "#yir-2023-games-played",
       gamesDelta: "#yir-2023-games-delta",
@@ -140,7 +154,7 @@ const yirConfigs = [
     },
   },
   {
-    endpoint: "/backend/yir_2022.php",
+    endpoint: "yir_2022.php",
     ids: {
       gamesPlayed: "#yir-2022-games-played",
       gamesDelta: "#yir-2022-games-delta",
@@ -226,7 +240,7 @@ const renderTimeline = (targetId, endpoint, year, steamid) => {
   if (!timelineTarget) return;
   timelineTarget.innerHTML = "";
 
-  fetchJson(`${endpoint}?steamid=${steamid}&t=${Date.now()}`)
+  fetchJson(`${backendUrl(endpoint)}?steamid=${steamid}&t=${Date.now()}`)
     .then((data) => {
       if (!data || data.ok !== true || !Array.isArray(data.timeline) || data.timeline.length === 0) {
         const empty = document.createElement("div");
@@ -262,7 +276,7 @@ const renderYearStats = (steamid) => {
     setStatText(nodes.sessions, "--");
     setStatText(nodes.achievements, "--");
 
-    fetchJson(`${endpoint}?steamid=${steamid}&t=${Date.now()}`)
+    fetchJson(`${backendUrl(endpoint)}?steamid=${steamid}&t=${Date.now()}`)
       .then((data) => {
         if (!data || data.ok !== true) {
           return;
@@ -309,7 +323,7 @@ const renderYearStats = (steamid) => {
 };
 
 const renderProfile = (steamid) => {
-  fetchJson(`/backend/steam_profile.php?steamid=${steamid}&t=${Date.now()}`)
+  fetchJson(`${backendUrl("steam_profile.php")}?steamid=${steamid}&t=${Date.now()}`)
     .then((data) => {
       if (!data || data.ok !== true) {
         return;
@@ -320,9 +334,9 @@ const renderProfile = (steamid) => {
       updateVanityLinks(data.persona_name);
     }
 
-    if (data.steamid && profileMeta.steamid) {
-      setStatText(profileMeta.steamid, data.steamid);
-    }
+  if (profileMeta.steamid) {
+    setStatText(profileMeta.steamid, data.steamid);
+  }
 
     if (data.avatar_url && profileMeta.avatar) {
       const bust = data.steamid || steamid;
@@ -332,15 +346,15 @@ const renderProfile = (steamid) => {
       profileMeta.avatar.alt = `Avatar Steam de ${data.persona_name || "profil"}`;
     }
 
-      if (data.level) {
+      if (profileMeta.level) {
         setStatText(profileMeta.level, data.level);
       }
 
-      if (data.games_owned) {
+      if (profileMeta.games) {
         setStatText(profileMeta.games, data.games_owned);
       }
 
-      if (data.member_since) {
+      if (profileMeta.member) {
         setStatText(profileMeta.member, data.member_since);
       }
 
@@ -357,14 +371,19 @@ const renderProfile = (steamid) => {
 
 const applySteamId = (steamid) => {
   if (!isSteamId(steamid)) return;
+  currentSteamId = steamid;
+  setStatText(profileMeta.games, "--");
+  setStatText(profileMeta.level, "--");
+  setStatText(profileMeta.member, "--");
   setStatText(profileMeta.steamid, steamid);
   updateSteamIdLinks(steamid);
   renderYearStats(steamid);
-  renderTimeline("#timeline-2025", "/backend/yir_2025.php", 2025, steamid);
-  renderTimeline("#timeline-2024", "/backend/yir_2024.php", 2024, steamid);
-  renderTimeline("#timeline-2023", "/backend/yir_2023.php", 2023, steamid);
-  renderTimeline("#timeline-2022", "/backend/yir_2022.php", 2022, steamid);
+  renderTimeline("#timeline-2025", "yir_2025.php", 2025, steamid);
+  renderTimeline("#timeline-2024", "yir_2024.php", 2024, steamid);
+  renderTimeline("#timeline-2023", "yir_2023.php", 2023, steamid);
+  renderTimeline("#timeline-2022", "yir_2022.php", 2022, steamid);
   renderProfile(steamid);
+  updateDeleteButtonState();
 };
 
 if (steamidAdd && steamidInput && steamidSelect) {
@@ -389,10 +408,28 @@ if (steamidAdd && steamidInput && steamidSelect) {
     saveSteamIdState(list, entry.steamid);
     steamidInput.value = "";
     applySteamId(entry.steamid);
+    if (addModal) {
+      addModal.classList.remove("is-open");
+      addModal.setAttribute("aria-hidden", "true");
+    }
   });
 
   steamidSelect.addEventListener("change", () => {
     const value = steamidSelect.value;
+    if (value === "__add__") {
+      if (addModal) {
+        addModal.classList.add("is-open");
+        addModal.setAttribute("aria-hidden", "false");
+        if (steamidInput) {
+          steamidInput.value = "";
+          steamidInput.focus();
+        }
+        if (steamidRemove) {
+          steamidRemove.disabled = protectedSteamIds.has(currentSteamId);
+        }
+      }
+      return;
+    }
     const state = loadSteamIdState();
     saveSteamIdState(state.list, value);
     applySteamId(value);
@@ -403,11 +440,55 @@ const state = loadSteamIdState();
 renderSteamIdSelect(state.list, state.active);
 applySteamId(state.active);
 
+if (addModal && steamidCancel) {
+  steamidCancel.addEventListener("click", () => {
+    addModal.classList.remove("is-open");
+    addModal.setAttribute("aria-hidden", "true");
+  });
+}
+
+if (addModal) {
+  addModal.addEventListener("click", (event) => {
+    if (event.target === addModal) {
+      addModal.classList.remove("is-open");
+      addModal.setAttribute("aria-hidden", "true");
+    }
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && addModal && addModal.classList.contains("is-open")) {
+    addModal.classList.remove("is-open");
+    addModal.setAttribute("aria-hidden", "true");
+  }
+});
+
+if (addModal && steamidRemove) {
+  steamidRemove.addEventListener("click", () => {
+    const state = loadSteamIdState();
+    const active = currentSteamId;
+    if (!isSteamId(active) || protectedSteamIds.has(active)) {
+      return;
+    }
+    const nextList = state.list.filter((item) => item.steamid !== active);
+    if (nextList.length === 0) {
+      return;
+    }
+    const nextActive = nextList[0].steamid;
+    renderSteamIdSelect(nextList, nextActive);
+    saveSteamIdState(nextList, nextActive);
+    applySteamId(nextActive);
+    addModal.classList.remove("is-open");
+    addModal.setAttribute("aria-hidden", "true");
+  });
+}
+
 const updateButton = document.querySelector("#update-button");
+const deleteButton = document.querySelector("#delete-button");
 if (updateButton) {
   updateButton.addEventListener("click", () => {
     const active = steamidSelect ? steamidSelect.value : state.active;
-    fetch(`/backend/clear_cache.php?steamid=${active}`)
+    fetch(`${backendUrl("clear_cache.php")}?steamid=${active}`)
       .then(() => {
         applySteamId(active);
       })
@@ -416,3 +497,28 @@ if (updateButton) {
       });
   });
 }
+
+if (deleteButton) {
+  deleteButton.addEventListener("click", () => {
+    const state = loadSteamIdState();
+    const active = currentSteamId;
+    if (!isSteamId(active) || protectedSteamIds.has(active)) {
+      return;
+    }
+    const nextList = state.list.filter((item) => item.steamid !== active);
+    if (nextList.length === 0) {
+      return;
+    }
+    const nextActive = nextList[0].steamid;
+    renderSteamIdSelect(nextList, nextActive);
+    saveSteamIdState(nextList, nextActive);
+    applySteamId(nextActive);
+  });
+}
+
+const updateDeleteButtonState = () => {
+  if (!deleteButton) return;
+  const disabled = protectedSteamIds.has(currentSteamId);
+  deleteButton.disabled = disabled;
+  deleteButton.classList.toggle("is-hidden", disabled);
+};

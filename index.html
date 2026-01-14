@@ -10,15 +10,22 @@
     <div class="page">
       <header class="profile-banner">
         <div class="profile-card">
-          <div class="avatar-frame">
-            <img
-              class="avatar"
-              id="profile-avatar"
-              src="https://avatars.fastly.steamstatic.com/7b1b115be6ac4ded1bbfff20010da104ce6a55e1_full.jpg"
-              alt="Avatar Steam de pouark"
-            />
-            <div class="avatar-name" id="profile-name">pouark</div>
-            <span class="status-dot" aria-hidden="true"></span>
+          <div class="profile-aside">
+            <div class="avatar-frame">
+              <img
+                class="avatar"
+                id="profile-avatar"
+                src="https://avatars.fastly.steamstatic.com/7b1b115be6ac4ded1bbfff20010da104ce6a55e1_full.jpg"
+                alt="Avatar Steam de pouark"
+              />
+              <div class="avatar-name" id="profile-name">pouark</div>
+              <span class="status-dot" aria-hidden="true"></span>
+            </div>
+            <div class="profile-controls">
+            <div class="control-row">
+              <select id="steamid-select" class="control-select"></select>
+            </div>
+            </div>
           </div>
           <div class="profile-info">
             <div class="profile-summary" aria-live="polite">
@@ -43,10 +50,6 @@
                 <span class="stat-value" id="profile-steamid-value">--</span>
               </div>
               <div class="stat">
-                <span class="stat-label">Valeur compte</span>
-                <span class="stat-value static-data">3553€</span>
-              </div>
-              <div class="stat">
                 <span class="stat-label">Jeux joues</span>
                 <span class="stat-value static-data">534 (54%)</span>
               </div>
@@ -54,20 +57,9 @@
                 <span class="stat-label">Heures</span>
                 <span class="stat-value static-data">3,576h</span>
               </div>
-            </div>
-            <div class="profile-controls">
-              <label class="control-label" for="steamid-select">SteamID actif</label>
-              <div class="control-row">
-                <select id="steamid-select" class="control-select"></select>
-                <input
-                  id="steamid-input"
-                  class="control-input"
-                  type="text"
-                  placeholder="Pseudo Steam ou SteamID"
-                />
-                <button id="steamid-add" class="control-button" type="button">
-                  Ajouter
-                </button>
+              <div class="stat">
+                <span class="stat-label">Valeur compte</span>
+                <span class="stat-value static-data">3553€</span>
               </div>
             </div>
             <div class="profile-actions">
@@ -240,6 +232,9 @@
             </div>
             <button class="fab-update" id="update-button" type="button" title="Mettre a jour">
               Update
+            </button>
+            <button class="fab-delete" id="delete-button" type="button" title="Supprimer l'ID">
+              Supprimer
             </button>
           </div>
         </div>
@@ -423,6 +418,24 @@
           <div class="timeline-list" id="timeline-2022" aria-live="polite"></div>
         </section>
       </main>
+    </div>
+
+    <div class="modal-overlay" id="add-profile-modal" aria-hidden="true">
+      <div class="modal">
+        <h3>Ajouter un pseudo ou ID</h3>
+        <p>Entre un pseudo Steam (ex: fouette) ou un SteamID 17 chiffres.</p>
+        <input
+          id="steamid-input"
+          class="control-input"
+          type="text"
+          placeholder="Pseudo Steam ou SteamID"
+        />
+        <div class="modal-actions">
+          <button id="steamid-remove" class="control-button ghost" type="button">Supprimer cet ID</button>
+          <button id="steamid-cancel" class="control-button ghost" type="button">Annuler</button>
+          <button id="steamid-add" class="control-button" type="button">Ajouter</button>
+        </div>
+      </div>
     </div>
 
     <script src="frontend/script.js"></script>

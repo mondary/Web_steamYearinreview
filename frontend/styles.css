@@ -71,9 +71,9 @@ body {
 
 .profile-card {
   display: grid;
-  --avatar-size: 160px;
-  grid-template-columns: var(--avatar-size) minmax(0, 1fr);
-  gap: 20px;
+  --avatar-size: 240px;
+  grid-template-columns: var(--avatar-size) minmax(0, 1fr) auto;
+  gap: 24px;
   align-items: stretch;
   padding: 22px 26px;
   border-radius: 14px;
@@ -117,6 +117,8 @@ body {
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-shadow: -2px -2px 0 #000000, 2px -2px 0 #000000, -2px 2px 0 #000000,
+    2px 2px 0 #000000, 0 0 8px rgba(0, 0, 0, 0.6);
 }
 
 .status-dot {
@@ -692,31 +694,37 @@ h1 {
 
 @media (max-width: 1200px) {
   .profile-card {
-    --avatar-size: 140px;
+    --avatar-size: 210px;
   }
 }
 
 @media (max-width: 1024px) {
   .profile-card {
-    --avatar-size: 120px;
+    --avatar-size: 190px;
   }
 }
 
 @media (max-width: 900px) {
   .profile-card {
-    --avatar-size: 110px;
+    --avatar-size: 170px;
   }
 }
 
 @media (max-width: 820px) {
   .profile-card {
-    --avatar-size: 102px;
+    --avatar-size: 156px;
   }
 }
 
 @media (max-width: 720px) {
   .profile-card {
-    --avatar-size: 96px;
+    grid-template-columns: minmax(0, 1fr);
+    --avatar-size: min(240px, 65vw);
+    gap: 18px;
+  }
+
+  .avatar-frame {
+    justify-self: start;
   }
 
   .profile-actions {
@@ -730,32 +738,32 @@ h1 {
 
 @media (max-width: 640px) {
   .profile-card {
-    --avatar-size: 90px;
+    --avatar-size: min(220px, 70vw);
   }
 }
 
 @media (max-width: 560px) {
   .profile-card {
-    --avatar-size: 84px;
+    --avatar-size: min(200px, 72vw);
   }
 }
 
 @media (max-width: 480px) {
   .profile-card {
-    --avatar-size: 78px;
+    --avatar-size: min(180px, 74vw);
   }
 }
 
 @media (max-width: 420px) {
   .profile-card {
-    --avatar-size: 72px;
-    gap: 14px;
+    --avatar-size: min(170px, 76vw);
+    gap: 12px;
   }
 }
 
 @media (max-width: 360px) {
   .profile-card {
-    --avatar-size: 64px;
-    gap: 12px;
+    --avatar-size: min(150px, 80vw);
+    gap: 10px;
   }
 }

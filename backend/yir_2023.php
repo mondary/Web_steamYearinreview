@@ -5,9 +5,31 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
+$configFile = __DIR__ . '/config.php';
+$steamCookie = '';
+if (file_exists($configFile)) {
+    $config = include $configFile;
+    if (is_array($config) && isset($config['steam_cookie'])) {
+        $steamCookie = (string) $config['steam_cookie'];
+    }
+}
+
 $year = 2023;
 $steamIdParam = isset($_GET['steamid']) ? (string) $_GET['steamid'] : '';
 $steamIdParam = preg_match('/^\d{17}$/', $steamIdParam) ? $steamIdParam : '76561197974617624';
+$url = 'https://store.steampowered.com/yearinreview/' . $steamIdParam . '/' . $year;
+
+$manualFile = __DIR__ . '/manual/yir_' . $year . '_' . $steamIdParam . '.json';
+if (file_exists($manualFile)) {
+    $manual = json_decode((string) file_get_contents($manualFile), true);
+    if (is_array($manual)) {
+        $manual['ok'] = true;
+        $manual['manual'] = true;
+        $manual['source'] = $manual['source'] ?? $url;
+        echo json_encode($manual);
+        exit;
+    }
+}
 
 $cacheFile = __DIR__ . '/cache/yir_2023_' . $steamIdParam . '.json';
 $cacheTtl = 6 * 60 * 60;
@@ -23,8 +45,6 @@ if (file_exists($cacheFile)) {
     }
 }
 
-$url = 'https://store.steampowered.com/yearinreview/' . $steamIdParam . '/' . $year;
-
 $ch = curl_init($url);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
@@ -32,6 +52,9 @@ curl_setopt_array($ch, [
     CURLOPT_TIMEOUT => 15,
     CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
 ]);
+if ($steamCookie !== '') {
+    curl_setopt($ch, CURLOPT_COOKIE, $steamCookie);
+}
 $html = curl_exec($ch);
 $error = curl_error($ch);
 // curl_close is deprecated in PHP 8.5+ and is a no-op since 8.0.
@@ -68,6 +91,18 @@ if (!preg_match($pattern, $html, $summaryMatch)) {
 
 $summaryJson = html_entity_decode($summaryMatch[1], ENT_QUOTES | ENT_HTML5);
 $summary = json_decode($summaryJson, true);
+
+if (is_array($summary) && $summary === []) {
+    $result = [
+        'ok' => true,
+        'fetched_at' => time(),
+        'source' => $url,
+        'timeline' => [],
+    ];
+    file_put_contents($cacheFile, json_encode($result));
+    echo json_encode($result);
+    exit;
+}
 
 if (!is_array($summary) || !isset($summary['playtime_stats'])) {
     if ($staleCache) {

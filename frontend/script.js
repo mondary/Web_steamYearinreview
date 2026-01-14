@@ -13,10 +13,11 @@ const stats = {
 };
 
 const profileMeta = {
-  status: document.querySelector("#profile-status"),
   level: document.querySelector("#profile-level-value"),
   games: document.querySelector("#profile-games-value"),
   member: document.querySelector("#profile-member-value"),
+  name: document.querySelector("#profile-name"),
+  steamid: document.querySelector("#profile-steamid-value"),
 };
 
 const setStatText = (node, value) => {
@@ -206,8 +207,12 @@ fetch("backend/steam_profile.php")
       return;
     }
 
-    if (data.status) {
-      setStatText(profileMeta.status, data.status);
+    if (data.persona_name && profileMeta.name) {
+      setStatText(profileMeta.name, data.persona_name);
+    }
+
+    if (data.steamid && profileMeta.steamid) {
+      setStatText(profileMeta.steamid, data.steamid);
     }
 
     if (data.level) {
@@ -230,6 +235,4 @@ fetch("backend/steam_profile.php")
       setStatText(stats.games, `${data.games_played} / ${data.games_owned}`);
     }
   })
-  .catch(() => {
-    setStatText(profileMeta.status, "Statut indisponible");
-  });
+  .catch(() => {});

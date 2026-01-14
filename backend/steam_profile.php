@@ -60,6 +60,11 @@ $statusNode = $xpath->query("//div[contains(@class,'profile_in_game_header')]")-
 $gamesPlayedNode = $xpath->query("//div[contains(@class,'games_played_ctn')]//div[contains(@class,'big_stat')]")->item(0);
 $titleNode = $xpath->query('//title')->item(0);
 
+$steamId = '';
+if (preg_match('/\"steamid\"\\s*:\\s*\"(\\d{17})\"/', $html, $matches)) {
+    $steamId = $matches[1];
+}
+
 $memberNode = $xpath->query("//*[contains(@data-tooltip-html, 'Member since')]")->item(0);
 $memberTooltip = $memberNode ? html_entity_decode($getAttr($memberNode, 'data-tooltip-html')) : '';
 $memberSince = '';
@@ -90,6 +95,7 @@ $result = [
     'ok' => true,
     'fetched_at' => time(),
     'source' => $url,
+    'steamid' => $steamId,
     'persona_name' => $personaName,
     'status' => $getText($statusNode),
     'level' => $getText($levelNode),

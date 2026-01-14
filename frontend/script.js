@@ -80,7 +80,7 @@ const resolveVanity = async (value) => {
     return null;
   }
 
-  const response = await fetch(`backend/resolve_steamid.php?vanity=${encodeURIComponent(vanity)}`);
+  const response = await fetch(`/backend/resolve_steamid.php?vanity=${encodeURIComponent(vanity)}`);
   const data = await response.json();
   if (!data || data.ok !== true) {
     return null;
@@ -93,7 +93,7 @@ const resolveVanity = async (value) => {
 
 const yirConfigs = [
   {
-    endpoint: "backend/yir_2025.php",
+    endpoint: "/backend/yir_2025.php",
     ids: {
       gamesPlayed: "#yir-games-played",
       gamesDelta: "#yir-games-delta",
@@ -104,7 +104,7 @@ const yirConfigs = [
     },
   },
   {
-    endpoint: "backend/yir_2024.php",
+    endpoint: "/backend/yir_2024.php",
     ids: {
       gamesPlayed: "#yir-2024-games-played",
       gamesDelta: "#yir-2024-games-delta",
@@ -115,7 +115,7 @@ const yirConfigs = [
     },
   },
   {
-    endpoint: "backend/yir_2023.php",
+    endpoint: "/backend/yir_2023.php",
     ids: {
       gamesPlayed: "#yir-2023-games-played",
       gamesDelta: "#yir-2023-games-delta",
@@ -126,7 +126,7 @@ const yirConfigs = [
     },
   },
   {
-    endpoint: "backend/yir_2022.php",
+    endpoint: "/backend/yir_2022.php",
     ids: {
       gamesPlayed: "#yir-2022-games-played",
       gamesDelta: "#yir-2022-games-delta",
@@ -283,7 +283,7 @@ const renderYearStats = (steamid) => {
 };
 
 const renderProfile = (steamid) => {
-  fetch(`backend/steam_profile.php?steamid=${steamid}`)
+  fetch(`/backend/steam_profile.php?steamid=${steamid}`)
     .then((response) => response.json())
     .then((data) => {
       if (!data || data.ok !== true) {
@@ -326,10 +326,10 @@ const applySteamId = (steamid) => {
   setStatText(profileMeta.steamid, steamid);
   updateSteamIdLinks(steamid);
   renderYearStats(steamid);
-  renderTimeline("#timeline-2025", "backend/yir_2025.php", 2025, steamid);
-  renderTimeline("#timeline-2024", "backend/yir_2024.php", 2024, steamid);
-  renderTimeline("#timeline-2023", "backend/yir_2023.php", 2023, steamid);
-  renderTimeline("#timeline-2022", "backend/yir_2022.php", 2022, steamid);
+  renderTimeline("#timeline-2025", "/backend/yir_2025.php", 2025, steamid);
+  renderTimeline("#timeline-2024", "/backend/yir_2024.php", 2024, steamid);
+  renderTimeline("#timeline-2023", "/backend/yir_2023.php", 2023, steamid);
+  renderTimeline("#timeline-2022", "/backend/yir_2022.php", 2022, steamid);
   renderProfile(steamid);
 };
 
@@ -373,7 +373,7 @@ const updateButton = document.querySelector("#update-button");
 if (updateButton) {
   updateButton.addEventListener("click", () => {
     const active = steamidSelect ? steamidSelect.value : state.active;
-    fetch(`backend/clear_cache.php?steamid=${active}`)
+    fetch(`/backend/clear_cache.php?steamid=${active}`)
       .then(() => {
         applySteamId(active);
       })

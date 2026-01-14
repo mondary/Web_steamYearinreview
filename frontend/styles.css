@@ -79,6 +79,7 @@ body {
   background: linear-gradient(120deg, rgba(17, 30, 48, 0.95), rgba(10, 18, 30, 0.95));
   border: 1px solid rgba(78, 110, 150, 0.55);
   box-shadow: 0 18px 40px rgba(4, 10, 22, 0.6);
+  position: relative;
 }
 
 .avatar-frame {
@@ -432,9 +433,9 @@ h1 {
 }
 
 .fab-update {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
   background: #ff9f45;
   color: #0b1118;
   border: none;

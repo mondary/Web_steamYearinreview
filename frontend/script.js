@@ -16,6 +16,7 @@ const steamidSelect = document.querySelector("#steamid-select");
 const steamidInput = document.querySelector("#steamid-input");
 const steamidAdd = document.querySelector("#steamid-add");
 const steamidLinks = document.querySelectorAll("[data-steamid-link]");
+const vanityLinks = document.querySelectorAll("[data-vanity-link]");
 const defaultSteamId = "76561197974617624";
 const defaultSteamLabel = "pouark";
 
@@ -25,6 +26,7 @@ const profileMeta = {
   member: document.querySelector("#profile-member-value"),
   name: document.querySelector("#profile-name"),
   steamid: document.querySelector("#profile-steamid-value"),
+  avatar: document.querySelector("#profile-avatar"),
 };
 
 const setStatText = (node, value) => {
@@ -70,6 +72,18 @@ const updateSteamIdLinks = (steamid) => {
     const template = link.getAttribute("data-steamid-link");
     if (template) {
       link.href = template.replace("{steamid}", steamid);
+    }
+  });
+};
+
+const updateVanityLinks = (vanity) => {
+  if (!vanity) return;
+  const safe = normalizeVanity(vanity);
+  if (!safe) return;
+  vanityLinks.forEach((link) => {
+    const template = link.getAttribute("data-vanity-link");
+    if (template) {
+      link.href = template.replace("{vanity}", safe);
     }
   });
 };
@@ -204,15 +218,21 @@ const buildTimelineItem = (entry, year) => {
   return item;
 };
 
+const fetchJson = (url) =>
+  fetch(url, { cache: "no-store" }).then((response) => response.json());
+
 const renderTimeline = (targetId, endpoint, year, steamid) => {
   const timelineTarget = document.querySelector(targetId);
   if (!timelineTarget) return;
   timelineTarget.innerHTML = "";
 
-  fetch(`${endpoint}?steamid=${steamid}`)
-    .then((response) => response.json())
+  fetchJson(`${endpoint}?steamid=${steamid}&t=${Date.now()}`)
     .then((data) => {
-      if (!data || data.ok !== true || !Array.isArray(data.timeline)) {
+      if (!data || data.ok !== true || !Array.isArray(data.timeline) || data.timeline.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "timeline-empty";
+        empty.textContent = "Rétrospective non publique ou indisponible pour ce profil.";
+        timelineTarget.appendChild(empty);
         return;
       }
 
@@ -235,8 +255,14 @@ const renderYearStats = (steamid) => {
       achievements: ids.achievements ? document.querySelector(ids.achievements) : null,
     };
 
-    fetch(`${endpoint}?steamid=${steamid}`)
-      .then((response) => response.json())
+    setStatText(nodes.gamesPlayed, "--");
+    setStatText(nodes.gamesDelta, "--");
+    setStatText(nodes.newGames, "--");
+    setStatText(nodes.demos, "--");
+    setStatText(nodes.sessions, "--");
+    setStatText(nodes.achievements, "--");
+
+    fetchJson(`${endpoint}?steamid=${steamid}&t=${Date.now()}`)
       .then((data) => {
         if (!data || data.ok !== true) {
           return;
@@ -283,20 +309,28 @@ const renderYearStats = (steamid) => {
 };
 
 const renderProfile = (steamid) => {
-  fetch(`/backend/steam_profile.php?steamid=${steamid}`)
-    .then((response) => response.json())
+  fetchJson(`/backend/steam_profile.php?steamid=${steamid}&t=${Date.now()}`)
     .then((data) => {
       if (!data || data.ok !== true) {
         return;
       }
 
-      if (data.persona_name && profileMeta.name) {
-        setStatText(profileMeta.name, data.persona_name);
-      }
+    if (data.persona_name && profileMeta.name) {
+      setStatText(profileMeta.name, data.persona_name);
+      updateVanityLinks(data.persona_name);
+    }
 
-      if (data.steamid && profileMeta.steamid) {
-        setStatText(profileMeta.steamid, data.steamid);
-      }
+    if (data.steamid && profileMeta.steamid) {
+      setStatText(profileMeta.steamid, data.steamid);
+    }
+
+    if (data.avatar_url && profileMeta.avatar) {
+      const bust = data.steamid || steamid;
+      const sep = data.avatar_url.includes("?") ? "&" : "?";
+      profileMeta.avatar.src = "";
+      profileMeta.avatar.src = `${data.avatar_url}${sep}steamid=${bust}`;
+      profileMeta.avatar.alt = `Avatar Steam de ${data.persona_name || "profil"}`;
+    }
 
       if (data.level) {
         setStatText(profileMeta.level, data.level);

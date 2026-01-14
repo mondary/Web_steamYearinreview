@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 $year = 2024;
 $steamIdParam = isset($_GET['steamid']) ? (string) $_GET['steamid'] : '';
@@ -9,10 +11,13 @@ $steamIdParam = preg_match('/^\d{17}$/', $steamIdParam) ? $steamIdParam : '76561
 
 $cacheFile = __DIR__ . '/cache/yir_2024_' . $steamIdParam . '.json';
 $cacheTtl = 6 * 60 * 60;
+$staleCache = null;
 
 if (file_exists($cacheFile)) {
     $cached = json_decode((string) file_get_contents($cacheFile), true);
-    if (is_array($cached) && isset($cached['fetched_at']) && (time() - (int) $cached['fetched_at'] < $cacheTtl)) {
+    $hasTimeline = is_array($cached) && isset($cached['timeline']) && is_array($cached['timeline']);
+    $staleCache = $hasTimeline ? $cached : null;
+    if ($hasTimeline && isset($cached['fetched_at']) && (time() - (int) $cached['fetched_at'] < $cacheTtl)) {
         echo json_encode($cached);
         exit;
     }
@@ -32,6 +37,11 @@ $error = curl_error($ch);
 // curl_close is deprecated in PHP 8.5+ and is a no-op since 8.0.
 
 if (!$html || $error) {
+    if ($staleCache) {
+        $staleCache['stale'] = true;
+        echo json_encode($staleCache);
+        exit;
+    }
     http_response_code(502);
     echo json_encode([
         'ok' => false,
@@ -43,6 +53,11 @@ if (!$html || $error) {
 $summaryMatch = [];
 $pattern = '/data-yearinreview_\\d+_' . $year . '=\"([^\"]+)\"/s';
 if (!preg_match($pattern, $html, $summaryMatch)) {
+    if ($staleCache) {
+        $staleCache['stale'] = true;
+        echo json_encode($staleCache);
+        exit;
+    }
     http_response_code(502);
     echo json_encode([
         'ok' => false,
@@ -55,6 +70,11 @@ $summaryJson = html_entity_decode($summaryMatch[1], ENT_QUOTES | ENT_HTML5);
 $summary = json_decode($summaryJson, true);
 
 if (!is_array($summary) || !isset($summary['playtime_stats'])) {
+    if ($staleCache) {
+        $staleCache['stale'] = true;
+        echo json_encode($staleCache);
+        exit;
+    }
     http_response_code(502);
     echo json_encode([
         'ok' => false,

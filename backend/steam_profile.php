@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 $steamIdParam = isset($_GET['steamid']) ? (string) $_GET['steamid'] : '';
 $steamIdParam = preg_match('/^\d{17}$/', $steamIdParam) ? $steamIdParam : '';
@@ -97,12 +99,29 @@ if ($titleText && strpos($titleText, '::') !== false) {
     $personaName = end($parts);
 }
 
+$avatarUrl = '';
+if (preg_match('/\"avatarfull\"\\s*:\\s*\"([^\"]+)\"/', $html, $matches)) {
+    $avatarUrl = $matches[1];
+} else {
+    if (preg_match('/https:\\/\\/avatars\\.fastly\\.steamstatic\\.com\\/[a-f0-9]+_full\\.jpg/i', $html, $matches)) {
+        $avatarUrl = $matches[0];
+    }
+}
+if ($avatarUrl === '') {
+    $avatarNode = $xpath->query("//div[contains(@class,'playerAvatar')]//img[contains(@srcset,'avatars.fastly') or contains(@src,'avatars.fastly')]")->item(0);
+    $avatarUrl = $getAttr($avatarNode, 'srcset') ?: $getAttr($avatarNode, 'src');
+    if ($avatarUrl && strpos($avatarUrl, ' ') !== false) {
+        $avatarUrl = trim(explode(' ', $avatarUrl)[0]);
+    }
+}
+
 $result = [
     'ok' => true,
     'fetched_at' => time(),
     'source' => $url,
     'steamid' => $steamId,
     'persona_name' => $personaName,
+    'avatar_url' => $avatarUrl,
     'status' => $getText($statusNode),
     'level' => $getText($levelNode),
     'badges' => $getText($badgesNode),
